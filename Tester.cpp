@@ -35,13 +35,6 @@ void Tester::runTest()
 	else
 		std::cout << "InitializationTest (Readers) Failed.\n";
 	   
-
-	//void initiateRandomChar(); - Tested.
-	//bool isValidRFID(RFID a_PreviousRFID, RFID a_CurrentRFID); - Tested.
-	//void initiateRFIDArray(int a_iElement, RFID a_pRFID[]); - Tested.
-	//bool isValidRFIDTailEvents(std::vector<Event> & a_vResult, std::vector<RFID> & a_vCloneRfid);
-
-
 	// Test 04: Test readers on rfid.
 	if (ReaderRFIDTest(readers, aRfid, detector ) == true)
 		std::cout << "ReaderRFIDTest Passed.\n";
