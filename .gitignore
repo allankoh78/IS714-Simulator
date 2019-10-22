@@ -4,3 +4,6 @@
 
 /Debug
 /.vs
+/Release/Simulator.tlog
+/Release
+/x64

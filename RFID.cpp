@@ -35,6 +35,10 @@ int RFID::getTailPointer() {
 	return iTailPointer;
 }
 
+void RFID::setTailPointer(int a_iTailPointer) {
+	iTailPointer = a_iTailPointer;
+}
+
 void RFID::initiateTailPointer() {
 	iTailPointer = 1;
 }
@@ -59,11 +63,19 @@ unsigned char* RFID::getTail() {
 	return pucTail;
 }
 
-void RFID::setTail(unsigned char a_ucTail) {
+bool RFID::setTail(unsigned char a_ucTail) {
+	bool bSuccess = true;
 	mTail.lock();
-	pucTail[iTailPointer - 1] = a_ucTail;
-	incTailPointer();	
+	int iOriginalTailPointer = iTailPointer;
+	incTailPointer();
+	if (pucTail[iTailPointer - 1] != a_ucTail)
+		pucTail[iTailPointer - 1] = a_ucTail;
+	else {
+		iTailPointer = iOriginalTailPointer;
+		bSuccess = false;
+	}
 	mTail.unlock();
+	return bSuccess;
 }
 
 void RFID::setTail(unsigned char* a_pucTail) {
@@ -89,4 +101,25 @@ void RFID::print() {
 	for ( int iIndex = 1 ; iIndex <= TAILSIZE ; iIndex++ )
 		std::cout << (int)getTail(iIndex) << "-";
 	std::cout << "," << getTailPointer();
+}
+
+void RFID::setReaderSequence(int iSeed) {
+	for (int iIndex = 0; iIndex < NUMOFREADER; iIndex++)
+		aReaderSequence[iIndex] = iIndex + 1;
+
+	srand(iSeed);
+	for (int i = NUMOFREADER - 1; i > 0; i--)
+	{
+		// Pick a random index from 0 to i  
+		int j = rand() % (i + 1);
+
+		// Swap array elements with another element at random index.
+		int iTemp = aReaderSequence[i];
+		aReaderSequence[i] = aReaderSequence[j];
+		aReaderSequence[j] = iTemp;	
+	}//end for
+}
+
+int RFID::getReaderSequence(int iIndex) {
+	return aReaderSequence[iIndex];
 }

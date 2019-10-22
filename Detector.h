@@ -11,12 +11,14 @@ class Detector
 private:
 	int iSeed;
 	unsigned char pucRandomChar[NUMBEROFRANDOMCHAR];
+	int iTruthNumberofClone;
 public:
 	Detector();
 	void setRandomChar(int a_iIndex, unsigned char a_ucRandom);
 	unsigned char getRandomChar(int a_iIndex);
 	void setSeed(int a_iSeedValue);
 	int getSeed();	
+	int getTruthNumberofClone();
 	void initiateRandomChar();
 	bool isValidRFID(RFID a_PreviousRFID, RFID a_CurrentRFID);
 	void initiateRFIDArray(int a_iNumOfRFIDs, RFID a_pRFID[]);

@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include "RFID.h"
+#include "Database.h"
 #include "Event.h"
 #include "Constant.h"
 
@@ -26,8 +27,9 @@ public:
 	void setSeed(int a_iSeedValue);
 	int getSeed();
 	void initiateRandomChar();
-	void read(RFID& a_RFID, PROCESS a_iProcess, Event& a_Event);
-	int toCloneRfid(RFID a_rfid, RFID& a_cloneRfid, Event& a_cloneEvent); // Used by malicious reader.
+	Reader& operator = (const Reader& a_Reader);
+	void read(RFID& a_RFID, PROCESS a_iProcess, Database &a_db);
+	int toCloneRfid(RFID a_rfid, RFID& a_cloneRfid, Database& a_db); // Used by malicious reader.
 };
 
 #endif

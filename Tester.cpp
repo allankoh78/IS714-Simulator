@@ -24,8 +24,8 @@ void Tester::runTest()
 		std::cout << "InitializationTest (Detector) Failed.\n";
 
 	// Test 03: To prepare the pool of random string for readers (reader.initiateRandomChar), and to determine if the function works properly.
-	Reader readers[NUMOFREADER];
-	for (int iIndex = 0; iIndex < NUMOFREADER; iIndex++) {
+	Reader readers[6];
+	for (int iIndex = 0; iIndex < 6; iIndex++) {
 		readers[iIndex].setReaderID(iIndex + 1);
 		readers[iIndex].setSeed(RANDOMSEED + iIndex + 1);
 		readers[iIndex].initiateRandomChar();
@@ -51,50 +51,37 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector a_Detec
 	Database db;
 	int iCloneCount = 0;
 	RFID cloneRFID;
+	/* You need to set these setting for the test to work correctly. 
+	static const int NUMBEROFRANDOMCHAR = 1000;
+	static const int TAILSIZE = 3;
+	static const int NUMOFRFID = 1000; //10;
+	static const int RANDOMSEED = 123456;
+	static const int NUMOFREADER = 4; //10;
+	static const int MAXCLONEPERCYCLE = 2;
+	static const int CLONEAGRESSIVE = 2; // Must be non-zero ; 1 is the most agressive ; Higher the number, lesser the agressiveness. 
+	*/
 
 	for (int iRFIDIndex = 1; iRFIDIndex < 6; iRFIDIndex++) {
 		std::cout << "Testing RFID (" << iRFIDIndex << "):\n";
 		srand(iRFIDIndex);
 		cloneRFID.reset();
 
-		a_pReader[0].read(a_pRFID[iRFIDIndex], PROCESS::intothechain, event);
-		db.insertEvent(event);
-		if (a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, cloneEvent) == 1) {
-			iCloneCount++;
-			db.insertEvent(cloneEvent);
-			cloneEvent.clear();
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		a_pReader[0].read(a_pRFID[iRFIDIndex], PROCESS::intothechain, db);
+		//std::thread th1(&Reader::read, &a_pReader[0], std::ref(a_pRFID[iRFIDIndex]), PROCESS::intothechain, std::ref(db));
+		//th1.join();
+		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
+		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-		a_pReader[1].read(a_pRFID[iRFIDIndex], PROCESS::shipping, event);
-		db.insertEvent(event);
-		if (a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, cloneEvent) == 1) {
-			iCloneCount++;
-			db.insertEvent(cloneEvent);
-			cloneEvent.clear();
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-		a_pReader[2].read(a_pRFID[iRFIDIndex], PROCESS::receiving, event);
-		db.insertEvent(event);
-		if (a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, cloneEvent) == 1) {
-			iCloneCount++;
-			db.insertEvent(cloneEvent);
-			cloneEvent.clear();
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-		a_pReader[3].read(a_pRFID[iRFIDIndex], PROCESS::stocking, event);
-		db.insertEvent(event);
-		if (a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, cloneEvent) == 1) {
-			iCloneCount++;
-			db.insertEvent(cloneEvent);
-			cloneEvent.clear();
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-		a_pReader[5].read(a_pRFID[iRFIDIndex], PROCESS::outofthechain, event);
-		db.insertEvent(event);
+		a_pReader[1].read(a_pRFID[iRFIDIndex], PROCESS::shipping, db);
+		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
+		
+		a_pReader[2].read(a_pRFID[iRFIDIndex], PROCESS::receiving, db);
+		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
+		
+		a_pReader[3].read(a_pRFID[iRFIDIndex], PROCESS::stocking, db);
+		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
+		
+		a_pReader[5].read(a_pRFID[iRFIDIndex], PROCESS::outofthechain, db);
 		std::vector<Event> vResult;
 		db.getRfidEvents(vResult, a_pRFID[iRFIDIndex].getRFID());
 		//db.print();
@@ -103,11 +90,23 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector a_Detec
 		a_Detector.isValidRFIDTailEvents(vResult, vCloneRfid);
 		switch (iRFIDIndex) {
 		case 1:
-			if (vCloneRfid.size() != 1)
+			if (vCloneRfid.size() != 5)
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 8 || tempRfid.getTail(2) != 14 || tempRfid.getTail(3) != 4 || tempRfid.getTailPointer() != 3)
+				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 146 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 3)
+					bResult = false;
+				tempRfid = (RFID)vCloneRfid.at(1);
+				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 143 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 17 || tempRfid.getTailPointer() != 1)
+					bResult = false;
+				tempRfid = (RFID)vCloneRfid.at(2);
+				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 4 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 1)
+					bResult = false;
+				tempRfid = (RFID)vCloneRfid.at(3);
+				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 143 || tempRfid.getTail(2) != 67 || tempRfid.getTail(3) != 17 || tempRfid.getTailPointer() != 2)
+					bResult = false;
+				tempRfid = (RFID)vCloneRfid.at(4);
+				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 4 || tempRfid.getTail(2) != 8 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 2)
 					bResult = false;
 			}
 			break;
@@ -116,35 +115,52 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector a_Detec
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 31 || tempRfid.getTail(2) != 28 || tempRfid.getTail(3) != 61 || tempRfid.getTailPointer() != 3)
+				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 45 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 28 || tempRfid.getTailPointer() != 3)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(1);
-				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 31 || tempRfid.getTail(2) != 17 || tempRfid.getTail(3) != 144 || tempRfid.getTailPointer() != 1)
+				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 58 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 187 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(2);
-				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 21 || tempRfid.getTail(2) != 13 || tempRfid.getTail(3) != 24 || tempRfid.getTailPointer() != 3)
+				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 24 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 28 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 			}			
 			break;
 		case 3:
-			if (vCloneRfid.size() != 0)
+			if (vCloneRfid.size() != 1)
 				bResult = false;
+			else {
+				RFID tempRfid = (RFID)vCloneRfid.at(0);
+				if (tempRfid.getRFID() != 4 || tempRfid.getTail(1) != 144 || tempRfid.getTail(2) != 200 || tempRfid.getTail(3) != 55 || tempRfid.getTailPointer() != 2)
+					bResult = false;
+			}
 			break;
 		case 4:
 			if (vCloneRfid.size() != 1)
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 5 || tempRfid.getTail(1) != 146 || tempRfid.getTail(2) != 145 || tempRfid.getTail(3) != 144 || tempRfid.getTailPointer() != 1)
+				if (tempRfid.getRFID() != 5 || tempRfid.getTail(1) != 251 || tempRfid.getTail(2) != 146 || tempRfid.getTail(3) != 145 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 			}
 			break;
 		case 5:
-			if (vCloneRfid.size() != 1)
+			if (vCloneRfid.size() != 5)
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 69 || tempRfid.getTail(2) != 176 || tempRfid.getTail(3) != 251 || tempRfid.getTailPointer() != 2)
+				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 32 || tempRfid.getTail(2) != 102 || tempRfid.getTail(3) != 176 || tempRfid.getTailPointer() != 3)
+					bResult = false;
+				tempRfid = (RFID)vCloneRfid.at(1);
+				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 98 || tempRfid.getTail(2) != 102 || tempRfid.getTail(3) != 64 || tempRfid.getTailPointer() != 1)
+					bResult = false;
+				tempRfid = (RFID)vCloneRfid.at(2);
+				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 149 || tempRfid.getTail(2) != 69 || tempRfid.getTail(3) != 176 || tempRfid.getTailPointer() != 2)
+					bResult = false;
+				tempRfid = (RFID)vCloneRfid.at(3);
+				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 98 || tempRfid.getTail(2) != 187 || tempRfid.getTail(3) != 64 || tempRfid.getTailPointer() != 2)
+					bResult = false;
+				tempRfid = (RFID)vCloneRfid.at(4);
+				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 149 || tempRfid.getTail(2) != 69 || tempRfid.getTail(3) != 218 || tempRfid.getTailPointer() != 3)
 					bResult = false;
 			}
 			break;
@@ -232,7 +248,8 @@ bool Tester::ComparisionTest() {
 	rfid1.setTail((unsigned char*)"ABC");
 	rfid2 = rfid1;
 
-	rfid1.setTail('X');
+	if ( rfid1.setTail('X') == false)
+		bResult = false;
 	//std::cout << "Test1: " << std::string((char*)rfid2.getTail(), TAILSIZE) << "(" << rfid2.getTailPointer() << ") ---> " << std::string((char*)rfid1.getTail(), TAILSIZE) << "(" << rfid1.getTailPointer() << ")\n";
 	bFlag = detector.isValidRFID(rfid2, rfid1);
 	if (bFlag == false)
@@ -240,21 +257,16 @@ bool Tester::ComparisionTest() {
 	//std::cout << (bFlag == true ? "Valid" : "Invalid") << "\n";
 
 	rfid2 = rfid1;
-	rfid1.setTail('B');
-	//std::cout << "Test2: " << std::string((char*)rfid2.getTail(), TAILSIZE) << "(" << rfid2.getTailPointer() << ") --- " << std::string((char*)rfid1.getTail(), TAILSIZE) << "(" << rfid1.getTailPointer() << ")\n";
-	bFlag = detector.isValidRFID(rfid2, rfid1);
-	if (bFlag == true)
+	if ( rfid1.setTail('C') != false) // Same value cannot be set.
 		bResult = false;
-	//std::cout << (bFlag == true ? "Valid" : "Invalid") << "\n";
 
 	rfid2 = rfid1;
-	rfid1.setTail('Z');
+	if (rfid1.setTail('Z') == false)
+		bResult = false;
 	rfid2.setTail((unsigned char*)"QBA");
-	//std::cout << "Test3: " << std::string((char*)rfid2.getTail(), TAILSIZE) << "(" << rfid2.getTailPointer() << ") --- " << std::string((char*)rfid1.getTail(), TAILSIZE) << "(" << rfid1.getTailPointer() << ")\n";
 	bFlag = detector.isValidRFID(rfid2, rfid1);
 	if (bFlag == true)
 		bResult = false;
-	//std::cout << (bFlag == true ? "Valid" : "Invalid") << "\n";
-
+	
 	return bResult;
 }
