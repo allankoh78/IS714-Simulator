@@ -1,31 +1,28 @@
 #include "Event.h"
 
 Event::Event() {
-	rfid.setRFID(0);
-	rfid.setTail((unsigned char*)NULL);
-	rfid.initiateTailPointer();
-	msOccurrenceTime = 0;
-	iProcess = PROCESS::intothechain;
+	clear();
 }
 
 void Event::clear() {
-	rfid.setRFID(0);
-	rfid.setTail((unsigned char*)NULL);
-	rfid.initiateTailPointer();
+	rfid.reset();
 	msOccurrenceTime = 0;
 	iProcess = PROCESS::intothechain;
+	bCloneAttacked = false;
 }
 
 Event::Event(const Event& a_Event) {
 	rfid = a_Event.rfid;
 	msOccurrenceTime = a_Event.msOccurrenceTime;
 	iProcess = a_Event.iProcess;
+	bCloneAttacked = a_Event.bCloneAttacked;
 };
 
-void Event::setValue(RFID a_RFID, PROCESS a_iProcess) {
+void Event::setValue(RFID a_RFID, PROCESS a_iProcess, bool a_bCloneAttacked) {
 	rfid = a_RFID;
 	msOccurrenceTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
 	iProcess = a_iProcess;
+	bCloneAttacked = a_bCloneAttacked;
 }
 
 RFID Event::getRFID() {
@@ -40,10 +37,15 @@ PROCESS Event::getProcess() {
 	return iProcess;
 }
 
+bool Event::getCloneAttacked() {
+	return bCloneAttacked;
+}
+
 string Event::print() {
 	ostringstream strbufMessage;
 	strbufMessage << getRFID().print();
 	strbufMessage << "," << getOccurrenceTime() << "," << static_cast<underlying_type<PROCESS>::type>(getProcess());
+	strbufMessage << (getCloneAttacked()==true ? ",Clone Attacked" : "");
 	return strbufMessage.str();
 }
 

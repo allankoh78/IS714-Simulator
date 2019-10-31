@@ -152,22 +152,32 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Database.cpp" />
+    <ClCompile Include="DatabasePro.cpp" />
     <ClCompile Include="Detector.cpp" />
+    <ClCompile Include="DetectorPro.cpp" />
     <ClCompile Include="Event.cpp" />
+    <ClCompile Include="EventPro.cpp" />
     <ClCompile Include="Logfile.cpp" />
     <ClCompile Include="Reader.cpp" />
+    <ClCompile Include="ReaderPro.cpp" />
     <ClCompile Include="RFID.cpp" />
+    <ClCompile Include="RFIDPro.cpp" />
     <ClCompile Include="Simulator.cpp" />
     <ClCompile Include="Tester.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constant.h" />
     <ClInclude Include="Database.h" />
+    <ClInclude Include="DatabasePro.h" />
     <ClInclude Include="Detector.h" />
+    <ClInclude Include="DetectorPro.h" />
     <ClInclude Include="Event.h" />
+    <ClInclude Include="EventPro.h" />
     <ClInclude Include="Logfile.h" />
     <ClInclude Include="Reader.h" />
+    <ClInclude Include="ReaderPro.h" />
     <ClInclude Include="RFID.h" />
+    <ClInclude Include="RFIDPro.h" />
     <ClInclude Include="Tester.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

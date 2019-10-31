@@ -22,8 +22,8 @@ public:
 	RFID(int a_iRfid, unsigned char* a_pucTail);
 	void incTailPointer();
 	void setTailPointer(int a_iTailPointer);
-	void setRFID(int a_iRfid);
-	int getRFID();
+	void setRFIDID(int a_iRfid);
+	int getRFIDID();
 	int getTailPointer();
 	void initiateTailPointer();
 	unsigned char getTail(int a_iIndex);

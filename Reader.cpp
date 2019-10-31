@@ -67,7 +67,7 @@ void Reader::initiateRandomChar() {
 	mRandomChar.unlock();
 }
 
-void Reader::read(RFID& a_RFID, PROCESS a_Process, Database& a_db) {
+void Reader::read(RFID& a_RFID, PROCESS a_Process, Database& a_db, bool a_bCloneAttacked) {
 	if (iRandomCharIndex >= NUMBEROFRANDOMCHAR)
 		iRandomCharIndex = 0;
 	bool bSuccess = false;
@@ -77,7 +77,7 @@ void Reader::read(RFID& a_RFID, PROCESS a_Process, Database& a_db) {
 		bSuccess = a_RFID.setTail(ucNewchar);
 	} while (bSuccess == false);
 	Event newEvent;
-	newEvent.setValue(a_RFID, a_Process);
+	newEvent.setValue(a_RFID, a_Process, a_bCloneAttacked);
 	a_db.insertEvent(newEvent);
 	this_thread::sleep_for(chrono::milliseconds((int)ucNewchar));
 }
@@ -85,9 +85,9 @@ void Reader::read(RFID& a_RFID, PROCESS a_Process, Database& a_db) {
 int Reader::toCloneRfid(RFID a_rfid, RFID& a_cloneRfid, Database& a_db) {	
 	srand((int)getRandomChar(iRandomCharIndex++));
 	if (rand() % CLONEAGRESSIVE == 0) {
-		if (a_cloneRfid.getRFID() == 0)
+		if (a_cloneRfid.getRFIDID() == 0)
 			a_cloneRfid = a_rfid;
-		read(a_cloneRfid, PROCESS::cloning, a_db);
+		read(a_cloneRfid, PROCESS::cloning, a_db, false);
 		return 1;
 	}
 	return 0;

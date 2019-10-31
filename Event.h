@@ -17,14 +17,15 @@ private:
 	RFID rfid; // ID, TT, TP
 	unsigned __int64 msOccurrenceTime; // T
 	PROCESS iProcess; // S
-
+	bool bCloneAttacked;
 public:
 	Event();
 	Event(const Event& a_Event);
-	void setValue(RFID a_Rfid, PROCESS a_iProcess);
+	void setValue(RFID a_Rfid, PROCESS a_iProcess, bool a_bCloneAttacked);
 	RFID getRFID();
 	unsigned __int64 getOccurrenceTime();
 	PROCESS getProcess();
+	bool getCloneAttacked();
 	string print();
 	bool operator<(const Event& a_event) const;
 	void clear();

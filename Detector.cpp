@@ -83,7 +83,7 @@ void Detector::initiateRFIDArray(int a_iNumOfRFIDs, RFID a_pRFID[]) {
 	int iRandomCharIndex = 0;
 
 	for (int iIndex = 0; iIndex < a_iNumOfRFIDs; iIndex++) {
-		a_pRFID[iIndex].setRFID(iIndex + 1);		
+		a_pRFID[iIndex].setRFIDID(iIndex + 1);		
 		a_pRFID[iIndex].setTailPointer(0); // Set the first element of the tail.
 		for (int iTailIndex = 0; iTailIndex < TAILSIZE; iTailIndex++) {
 			a_pRFID[iIndex].setTail(getRandomChar(iRandomCharIndex+iTailIndex)); // No need to check as detector ensures neighbouring random chars are unique.
@@ -110,12 +110,17 @@ bool Detector::isValidRFIDTailEvents(vector<Event> & a_vRFIDObservations, vector
 
 	a_vCloneRfidFound.clear();
 	for (vector<Event>::iterator it = a_vRFIDObservations.begin(); it != a_vRFIDObservations.end(); ++it) {
-		if (previousEvent.getRFID().getRFID() == 0) {
+		if (previousEvent.getRFID().getRFIDID() == 0) {
 			previousEvent = *it;
 			continue;
 		}
 		// Compare the current event tail with the previous event tail.
 		currentEvent = *it;
+
+		// Skip the checking if bCloneAttacked is true;
+		if (currentEvent.getCloneAttacked() == true) {
+			continue;
+		}
 		if (isValidRFID(previousEvent.getRFID(), currentEvent.getRFID()) != true) {
 			a_vCloneRfidFound.push_back(currentEvent.getRFID());
 			bFoundClone = true;

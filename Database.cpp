@@ -6,7 +6,7 @@
 /// </summary>
 void Database::insertEvent(Event a_Event) {
 	mdb.lock();
-	eventdb.insert(pair<int, Event>(a_Event.getRFID().getRFID(), a_Event));
+	eventdb.insert(pair<int, Event>(a_Event.getRFID().getRFIDID(), a_Event));
 	mdb.unlock();
 }
 

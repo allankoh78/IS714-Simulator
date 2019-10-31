@@ -28,7 +28,7 @@ public:
 	int getSeed();
 	void initiateRandomChar();
 	Reader& operator = (const Reader& a_Reader);
-	void read(RFID& a_RFID, PROCESS a_iProcess, Database &a_db);
+	void read(RFID& a_RFID, PROCESS a_iProcess, Database &a_db, bool a_bCloneAttacked);
 	int toCloneRfid(RFID a_rfid, RFID& a_cloneRfid, Database& a_db); // Used by malicious reader.
 };
 

@@ -39,6 +39,21 @@
     <ClCompile Include="Logfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RFIDPro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EventPro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DatabasePro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ReaderPro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DetectorPro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RFID.h">
@@ -63,6 +78,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Logfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RFIDPro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EventPro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DatabasePro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ReaderPro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DetectorPro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

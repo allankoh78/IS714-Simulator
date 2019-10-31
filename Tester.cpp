@@ -80,21 +80,21 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector& a_Dete
 		srand(iRFIDIndex);
 		cloneRFID.reset();
 
-		a_pReader[0].read(a_pRFID[iRFIDIndex], PROCESS::intothechain, db);
+		a_pReader[0].read(a_pRFID[iRFIDIndex], PROCESS::intothechain, db, false);
 		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db); // Depending on CLONEAGRESSIVE, toCloneRfid may or may not create a clone tag.
 		
-		a_pReader[1].read(a_pRFID[iRFIDIndex], PROCESS::shipping, db);
+		a_pReader[1].read(a_pRFID[iRFIDIndex], PROCESS::shipping, db, false);
 		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
 		
-		a_pReader[2].read(a_pRFID[iRFIDIndex], PROCESS::receiving, db);
+		a_pReader[2].read(a_pRFID[iRFIDIndex], PROCESS::receiving, db, false);
 		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
 		
-		a_pReader[3].read(a_pRFID[iRFIDIndex], PROCESS::stocking, db);
+		a_pReader[3].read(a_pRFID[iRFIDIndex], PROCESS::stocking, db, false);
 		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
 		
-		a_pReader[5].read(a_pRFID[iRFIDIndex], PROCESS::outofthechain, db);
+		a_pReader[5].read(a_pRFID[iRFIDIndex], PROCESS::outofthechain, db, false);
 		vector<Event> vResult;
-		db.getRfidEvents(vResult, a_pRFID[iRFIDIndex].getRFID());
+		db.getRfidEvents(vResult, a_pRFID[iRFIDIndex].getRFIDID());
 		
 		// Verify the results.
 		vector<RFID> vCloneRfid;
@@ -105,19 +105,19 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector& a_Dete
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 146 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 3)
+				if (tempRfid.getRFIDID() != 2 || tempRfid.getTail(1) != 146 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 3)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(1);
-				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 143 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 17 || tempRfid.getTailPointer() != 1)
+				if (tempRfid.getRFIDID() != 2 || tempRfid.getTail(1) != 143 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 17 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(2);
-				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 4 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 1)
+				if (tempRfid.getRFIDID() != 2 || tempRfid.getTail(1) != 4 || tempRfid.getTail(2) != 254 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(3);
-				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 143 || tempRfid.getTail(2) != 67 || tempRfid.getTail(3) != 17 || tempRfid.getTailPointer() != 2)
+				if (tempRfid.getRFIDID() != 2 || tempRfid.getTail(1) != 143 || tempRfid.getTail(2) != 67 || tempRfid.getTail(3) != 17 || tempRfid.getTailPointer() != 2)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(4);
-				if (tempRfid.getRFID() != 2 || tempRfid.getTail(1) != 4 || tempRfid.getTail(2) != 8 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 2)
+				if (tempRfid.getRFIDID() != 2 || tempRfid.getTail(1) != 4 || tempRfid.getTail(2) != 8 || tempRfid.getTail(3) != 1 || tempRfid.getTailPointer() != 2)
 					bResult = false;
 			}
 			break;
@@ -126,13 +126,13 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector& a_Dete
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 45 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 28 || tempRfid.getTailPointer() != 3)
+				if (tempRfid.getRFIDID() != 3 || tempRfid.getTail(1) != 45 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 28 || tempRfid.getTailPointer() != 3)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(1);
-				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 58 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 187 || tempRfid.getTailPointer() != 1)
+				if (tempRfid.getRFIDID() != 3 || tempRfid.getTail(1) != 58 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 187 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(2);
-				if (tempRfid.getRFID() != 3 || tempRfid.getTail(1) != 24 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 28 || tempRfid.getTailPointer() != 1)
+				if (tempRfid.getRFIDID() != 3 || tempRfid.getTail(1) != 24 || tempRfid.getTail(2) != 31 || tempRfid.getTail(3) != 28 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 			}			
 			break;
@@ -141,7 +141,7 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector& a_Dete
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 4 || tempRfid.getTail(1) != 144 || tempRfid.getTail(2) != 200 || tempRfid.getTail(3) != 55 || tempRfid.getTailPointer() != 2)
+				if (tempRfid.getRFIDID() != 4 || tempRfid.getTail(1) != 144 || tempRfid.getTail(2) != 200 || tempRfid.getTail(3) != 55 || tempRfid.getTailPointer() != 2)
 					bResult = false;
 			}
 			break;
@@ -150,7 +150,7 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector& a_Dete
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 5 || tempRfid.getTail(1) != 251 || tempRfid.getTail(2) != 146 || tempRfid.getTail(3) != 145 || tempRfid.getTailPointer() != 1)
+				if (tempRfid.getRFIDID() != 5 || tempRfid.getTail(1) != 251 || tempRfid.getTail(2) != 146 || tempRfid.getTail(3) != 145 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 			}
 			break;
@@ -159,19 +159,19 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector& a_Dete
 				bResult = false;
 			else {
 				RFID tempRfid = (RFID)vCloneRfid.at(0);
-				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 32 || tempRfid.getTail(2) != 102 || tempRfid.getTail(3) != 176 || tempRfid.getTailPointer() != 3)
+				if (tempRfid.getRFIDID() != 6 || tempRfid.getTail(1) != 32 || tempRfid.getTail(2) != 102 || tempRfid.getTail(3) != 176 || tempRfid.getTailPointer() != 3)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(1);
-				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 98 || tempRfid.getTail(2) != 102 || tempRfid.getTail(3) != 64 || tempRfid.getTailPointer() != 1)
+				if (tempRfid.getRFIDID() != 6 || tempRfid.getTail(1) != 98 || tempRfid.getTail(2) != 102 || tempRfid.getTail(3) != 64 || tempRfid.getTailPointer() != 1)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(2);
-				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 149 || tempRfid.getTail(2) != 69 || tempRfid.getTail(3) != 176 || tempRfid.getTailPointer() != 2)
+				if (tempRfid.getRFIDID() != 6 || tempRfid.getTail(1) != 149 || tempRfid.getTail(2) != 69 || tempRfid.getTail(3) != 176 || tempRfid.getTailPointer() != 2)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(3);
-				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 98 || tempRfid.getTail(2) != 187 || tempRfid.getTail(3) != 64 || tempRfid.getTailPointer() != 2)
+				if (tempRfid.getRFIDID() != 6 || tempRfid.getTail(1) != 98 || tempRfid.getTail(2) != 187 || tempRfid.getTail(3) != 64 || tempRfid.getTailPointer() != 2)
 					bResult = false;
 				tempRfid = (RFID)vCloneRfid.at(4);
-				if (tempRfid.getRFID() != 6 || tempRfid.getTail(1) != 149 || tempRfid.getTail(2) != 69 || tempRfid.getTail(3) != 218 || tempRfid.getTailPointer() != 3)
+				if (tempRfid.getRFIDID() != 6 || tempRfid.getTail(1) != 149 || tempRfid.getTail(2) != 69 || tempRfid.getTail(3) != 218 || tempRfid.getTailPointer() != 3)
 					bResult = false;
 			}
 			break;
@@ -240,7 +240,7 @@ bool Tester::InitializationTest(Detector& a_Detector, RFID a_pRFID[]) {
 	int iRandomCharIndex = 0;
 
 	for (int iIndex = 0; iIndex < NUMOFRFID; iIndex++) {
-		if (a_pRFID[iIndex].getRFID() != iIndex + 1) {
+		if (a_pRFID[iIndex].getRFIDID() != iIndex + 1) {
 			bResult = false;
 			break;
 		}

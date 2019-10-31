@@ -1,10 +1,7 @@
 #include "RFID.h"
 
 RFID::RFID() {
-	iRfid = 0;
-	iTailPointer = 1;
-	memset(pucTail, 0x0, sizeof(unsigned char) * TAILSIZE);
-	memset(aReaderSequence, 0x0, sizeof(int) * NUMOFREADER);
+	reset();
 }
 
 void RFID::reset() {
@@ -18,6 +15,7 @@ RFID::RFID(int a_iTailPointer, unsigned char* a_pucTail) {
 	iRfid = a_iTailPointer;
 	iTailPointer = 1;
 	setTail(a_pucTail);
+	memset(aReaderSequence, 0x0, sizeof(int) * NUMOFREADER);
 }
 
 RFID::RFID(const RFID& a_RFID) {
@@ -91,19 +89,19 @@ void RFID::setTail(unsigned char* a_pucTail) {
 	mTail.unlock();
 }
 
-void RFID::setRFID(int a_iRfid) {
+void RFID::setRFIDID(int a_iRfid) {
 	iRfid = a_iRfid;
 }
 
-int RFID::getRFID() {
+int RFID::getRFIDID() {
 	return iRfid;
 }
 
 string RFID::print() {
 	ostringstream strbufMessage;
-	strbufMessage << getRFID() << ",";
+	strbufMessage << getRFIDID() << ",";
 	for ( int iIndex = 1 ; iIndex <= TAILSIZE ; iIndex++ )
-		strbufMessage << (int)getTail(iIndex) << "-";
+		strbufMessage << (int)getTail(iIndex) << ":";
 	strbufMessage << "," << getTailPointer();
 	return strbufMessage.str();
 }
