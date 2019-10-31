@@ -2,11 +2,12 @@
 #define __EVENT_H_INCLUDED__   
 
 #include <chrono>
+#include <sstream>
 #include "Constant.h"
 #include "RFID.h"
-// Assuming a basic event that comprises 28 bytes: (ID(12 bytes), T(8 bytes), L(4 bytes), P(4 bytes)).
-// (ID, T, L, S, TT, TP, TF) -	ID: Tag ID, T: Occurrence Time, L: Location, S: Process (receiving, stocking, shipping),
-//								TT: Tag Tail, TP: Tail Pointer, TF = Tail Flag
+// A basic event comprise of (ID, T, L, S, TT, TP, TF) 
+//	ID: Tag ID, T: Occurrence Time, L: Location, S: Process (receiving, stocking, shipping),
+//	TT: Tag Tail, TP: Tail Pointer, TF = Tail Flag
 // Two special events are created when tags enter the supply chain(an into-the-chain event,
 // created at the manufacturer when tags and IDs are assigned to products) and when tags leave the chain(out-of-the-chain event, created at the retailer).
 // * We will ignore the location and tail flag.
@@ -24,7 +25,7 @@ public:
 	RFID getRFID();
 	unsigned __int64 getOccurrenceTime();
 	PROCESS getProcess();
-	void print();
+	string print();
 	bool operator<(const Event& a_event) const;
 	void clear();
 };

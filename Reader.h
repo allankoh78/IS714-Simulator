@@ -16,7 +16,7 @@ private:
 	int iSeed;
 	int iRandomCharIndex;
 	unsigned char pucRandomChar[NUMBEROFRANDOMCHAR];
-	std::mutex mRandomChar;
+	mutex mRandomChar;
 public:
 	Reader();
 	Reader(const Reader& a_Reader);

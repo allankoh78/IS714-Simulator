@@ -3,13 +3,15 @@
 RFID::RFID() {
 	iRfid = 0;
 	iTailPointer = 1;
-	memset(pucTail, 0x0, TAILSIZE);
+	memset(pucTail, 0x0, sizeof(unsigned char) * TAILSIZE);
+	memset(aReaderSequence, 0x0, sizeof(int) * NUMOFREADER);
 }
 
 void RFID::reset() {
 	iRfid = 0;
 	iTailPointer = 1;
-	memset(pucTail, 0x0, TAILSIZE);
+	memset(pucTail, 0x0, sizeof(unsigned char) * TAILSIZE);
+	memset(aReaderSequence, 0x0, sizeof(int) * NUMOFREADER);
 }
 
 RFID::RFID(int a_iTailPointer, unsigned char* a_pucTail) {
@@ -21,13 +23,15 @@ RFID::RFID(int a_iTailPointer, unsigned char* a_pucTail) {
 RFID::RFID(const RFID& a_RFID) {
 	iRfid = a_RFID.iRfid;
 	iTailPointer = a_RFID.iTailPointer;
-	memcpy(pucTail, a_RFID.pucTail, TAILSIZE);
+	memcpy(pucTail, a_RFID.pucTail, sizeof(unsigned char) * TAILSIZE);
+	memcpy(aReaderSequence, a_RFID.aReaderSequence, sizeof(int) * NUMOFREADER);
 }
 
 RFID& RFID::operator = (const RFID& a_RFID) {
 	iRfid = a_RFID.iRfid;
 	iTailPointer = a_RFID.iTailPointer;
-	memcpy(pucTail, a_RFID.pucTail, TAILSIZE);
+	memcpy(pucTail, a_RFID.pucTail, sizeof(unsigned char) * TAILSIZE);
+	memcpy(aReaderSequence, a_RFID.aReaderSequence, sizeof(int) * NUMOFREADER);
 	return *this;
 }
 
@@ -95,12 +99,13 @@ int RFID::getRFID() {
 	return iRfid;
 }
 
-void RFID::print() {
-	//std::cout << getRFID() << "," << std::string((char *) getTail(), TAILSIZE) << "," << getTailPointer();
-	std::cout << getRFID() << ",";
+string RFID::print() {
+	ostringstream strbufMessage;
+	strbufMessage << getRFID() << ",";
 	for ( int iIndex = 1 ; iIndex <= TAILSIZE ; iIndex++ )
-		std::cout << (int)getTail(iIndex) << "-";
-	std::cout << "," << getTailPointer();
+		strbufMessage << (int)getTail(iIndex) << "-";
+	strbufMessage << "," << getTailPointer();
+	return strbufMessage.str();
 }
 
 void RFID::setReaderSequence(int iSeed) {

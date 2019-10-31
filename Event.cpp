@@ -24,7 +24,7 @@ Event::Event(const Event& a_Event) {
 
 void Event::setValue(RFID a_RFID, PROCESS a_iProcess) {
 	rfid = a_RFID;
-	msOccurrenceTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	msOccurrenceTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
 	iProcess = a_iProcess;
 }
 
@@ -40,9 +40,11 @@ PROCESS Event::getProcess() {
 	return iProcess;
 }
 
-void Event::print() {
-	getRFID().print();
-	std::cout << "," << getOccurrenceTime() << "," << static_cast<std::underlying_type<PROCESS>::type>(getProcess());
+string Event::print() {
+	ostringstream strbufMessage;
+	strbufMessage << getRFID().print();
+	strbufMessage << "," << getOccurrenceTime() << "," << static_cast<underlying_type<PROCESS>::type>(getProcess());
+	return strbufMessage.str();
 }
 
 bool Event::operator < (const Event& a_event) const

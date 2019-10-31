@@ -79,7 +79,7 @@ void Reader::read(RFID& a_RFID, PROCESS a_Process, Database& a_db) {
 	Event newEvent;
 	newEvent.setValue(a_RFID, a_Process);
 	a_db.insertEvent(newEvent);
-	std::this_thread::sleep_for(std::chrono::milliseconds((int)ucNewchar));
+	this_thread::sleep_for(chrono::milliseconds((int)ucNewchar));
 }
 
 int Reader::toCloneRfid(RFID a_rfid, RFID& a_cloneRfid, Database& a_db) {	

@@ -63,7 +63,6 @@ bool Detector::isValidRFID(RFID a_PreviousRFID, RFID a_CurrentRFID) {
 		return false;
 	
 	// Reset the tail pointer to the previous RFID's one.
-	// iTestingTailPointer = a_PreviousRFID.getTailPointer();
 	iTestingTailPointer = a_CurrentRFID.getTailPointer();
 	if (a_PreviousRFID.getTail(iTestingTailPointer) == a_CurrentRFID.getTail(iTestingTailPointer))
 		return false;
@@ -103,13 +102,14 @@ void Detector::initiateRFIDArray(int a_iNumOfRFIDs, RFID a_pRFID[]) {
 /// isValidRFIDTailEvents.
 /// Return true if all the event in a_vRFIDObservations have valid tail values (Only tail value, pointed by the previous event tail pointer, is different).
 /// </summary>
-bool Detector::isValidRFIDTailEvents(std::vector<Event> & a_vRFIDObservations, std::vector<RFID> & a_vCloneRfidFound) {
+bool Detector::isValidRFIDTailEvents(vector<Event> & a_vRFIDObservations, vector<RFID> & a_vCloneRfidFound, Logfile& a_logfile) {
 	Event currentEvent;
 	Event previousEvent;
 	bool bFoundClone = false;
+	ostringstream strbufMessage;
 
 	a_vCloneRfidFound.clear();
-	for (std::vector<Event>::iterator it = a_vRFIDObservations.begin(); it != a_vRFIDObservations.end(); ++it) {
+	for (vector<Event>::iterator it = a_vRFIDObservations.begin(); it != a_vRFIDObservations.end(); ++it) {
 		if (previousEvent.getRFID().getRFID() == 0) {
 			previousEvent = *it;
 			continue;
@@ -125,16 +125,12 @@ bool Detector::isValidRFIDTailEvents(std::vector<Event> & a_vRFIDObservations, s
 		if (previousEvent.getProcess() == PROCESS::cloning) {
 			iTruthNumberofClone++;
 			if (bFoundClone == false) {
-				printf("\n");
-				previousEvent.print();
-				printf(": ");
-				previousEvent.getRFID().print();
-				printf("\n");
-				currentEvent.print();
-				printf(": ");
-				currentEvent.getRFID().print();
-				printf("\n");
-				//getchar();
+				strbufMessage << "!Detected consecutive clone tag!\n";
+				strbufMessage << "Previous RFID, Tail Value, Tail Pointer, Timestamp, Operation, Current RFID, Tail Value, Tail Pointer\n";
+				strbufMessage << previousEvent.print() << "," << currentEvent.print() << "\n!Detection ends!\n";
+				a_logfile.write(strbufMessage.str());
+				strbufMessage.clear();
+				strbufMessage.str("");
 			}
 		}
 

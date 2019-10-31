@@ -1,11 +1,12 @@
 #ifndef __DETECTOR_H_INCLUDED__   
 #define __DETECTOR_H_INCLUDED__   
+#include <vector>
+#include <sstream> 
 
 #include "RFID.h"
 #include "Constant.h"
 #include "Event.h"
-#include <vector>
-
+#include "Logfile.h"
 class Detector
 {
 private:
@@ -22,7 +23,7 @@ public:
 	void initiateRandomChar();
 	bool isValidRFID(RFID a_PreviousRFID, RFID a_CurrentRFID);
 	void initiateRFIDArray(int a_iNumOfRFIDs, RFID a_pRFID[]);
-	bool isValidRFIDTailEvents(std::vector<Event>& a_vRFIDObservations, std::vector<RFID>& a_vCloneRfidFound);
+	bool isValidRFIDTailEvents(vector<Event>& a_vRFIDObservations, vector<RFID>& a_vCloneRfidFound, Logfile& a_logfile);
 };
 
 #endif

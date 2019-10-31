@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <mutex>
+#include <sstream>
 #include "Constant.h"
 
 class RFID
@@ -12,7 +13,7 @@ private:
 	int iRfid;
 	int iTailPointer;
 	unsigned char pucTail[TAILSIZE];	
-	std::mutex mTail;
+	mutex mTail;
 	int aReaderSequence[NUMOFREADER];
 	
 public:
@@ -29,7 +30,7 @@ public:
 	unsigned char* getTail();
 	bool setTail(unsigned char a_ucTail);
 	void setTail(unsigned char* a_pucTail);
-	void print();
+	string print();
 	void reset();
 	RFID& operator = (const RFID& a_RFID);
 	void setReaderSequence(int iSeed); // https://www.geeksforgeeks.org/shuffle-a-given-array-using-fisher-yates-shuffle-algorithm/

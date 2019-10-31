@@ -1,77 +1,88 @@
-// Simulator.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 #include "Tester.h"
 
-void Tester::runTest()
+/// <summary>
+/// runTest.
+/// Perform 4 tests to ensure the functions are working correctly.
+/// Test 01: To compare tail values and tail pointer, and to determine if the comparision test (detector.isValidRFID) is working.
+/// Test 02: To prepare the pool of random strings for all RFIDs' tails (detector.initiateRandomChar), 
+///			 and to determine if this pool is properly assigned to the array of RFID (detector.initiateRFIDArray).
+/// Test 03: To prepare the pool of random string for readers (reader.initiateRandomChar), and to determine if the function works properly.
+/// Test 04: Test readers on rfid.
+/// </summary>
+void Tester::runTest(Logfile& a_logfile)
 {
 	// Test 01: To compare tail values and tail pointer, and to determine if the comparision test (detector.isValidRFID) is working.
 	if (ComparisionTest() == true)
-		std::cout << "ComparisionTest Passed.\n";
+		a_logfile.write("ComparisionTest Passed.\n");
 	else
-		std::cout << "ComparisionTest Failed.\n";
+		a_logfile.write("ComparisionTest Failed.\n");
 		
 	// Test 02: To prepare the pool of random strings for all RFIDs' tails (detector.initiateRandomChar), 
 	// and to determine if this pool is properly assigned to the array of RFID (detector.initiateRFIDArray).
-	RFID aRfid[NUMOFRFID];
+	RFID *aRfid = new RFID[NUMOFRFID];
 	Detector detector;
 	detector.setSeed(RANDOMSEED);
 	detector.initiateRandomChar();
 	// Initiate the RFID tail, tail pointer and RFID id.
 	detector.initiateRFIDArray(NUMOFRFID, aRfid);
 	if (InitializationTest(detector, aRfid) == true)
-		std::cout << "InitializationTest (Detector) Passed.\n";
+		a_logfile.write("InitializationTest (Detector) Passed.\n");
 	else
-		std::cout << "InitializationTest (Detector) Failed.\n";
+		a_logfile.write("InitializationTest (Detector) Failed.\n");
 
 	// Test 03: To prepare the pool of random string for readers (reader.initiateRandomChar), and to determine if the function works properly.
-	Reader readers[6];
+	Reader *readers = new Reader[6];
 	for (int iIndex = 0; iIndex < 6; iIndex++) {
 		readers[iIndex].setReaderID(iIndex + 1);
 		readers[iIndex].setSeed(RANDOMSEED + iIndex + 1);
 		readers[iIndex].initiateRandomChar();
 	}
-	if (InitializationTest(readers) == true)
-		std::cout << "InitializationTest (Readers) Passed.\n";
+	if (InitializationReaderTest(readers) == true)
+		a_logfile.write("InitializationReaderTest (Readers) Passed.\n");
 	else
-		std::cout << "InitializationTest (Readers) Failed.\n";
+		a_logfile.write("InitializationReaderTest (Readers) Failed.\n");
 	   
 	// Test 04: Test readers on rfid.
-	if (ReaderRFIDTest(readers, aRfid, detector ) == true)
-		std::cout << "ReaderRFIDTest Passed.\n";
+	if (ReaderRFIDTest(readers, aRfid, detector, a_logfile ) == true)
+		a_logfile.write("ReaderRFIDTest Passed.\n");
 	else
-		std::cout << "ReaderRFIDTest Failed.\n";
+		a_logfile.write("ReaderRFIDTest Failed.\n");
 
 	return;
 }
 
-bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector a_Detector) {
+/// <summary>
+/// ReaderRFIDTest.
+/// Test readers on rfid. To ensure the reader can change the tail value and tail pointer correctly.
+/// You need to set these setting for the test to work correctly.
+///	static const int NUMBEROFRANDOMCHAR = 1000;
+///	static const int TAILSIZE = 3;
+///	static const int NUMOFRFID = 1000; //10;
+///	static const int RANDOMSEED = 123456;
+///	static const int NUMOFREADER = 4; //10;
+///	static const int MAXCLONEPERCYCLE = 2;
+///	static const int CLONEAGRESSIVE = 2; // Must be non-zero ; 1 is the most agressive ; Higher the number, lesser the agressiveness.
+/// </summary>
+bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector& a_Detector, Logfile& a_logfile) {
 	bool bResult = true;
 	Event event;
 	Event cloneEvent;
 	Database db;
 	int iCloneCount = 0;
 	RFID cloneRFID;
-	/* You need to set these setting for the test to work correctly. 
-	static const int NUMBEROFRANDOMCHAR = 1000;
-	static const int TAILSIZE = 3;
-	static const int NUMOFRFID = 1000; //10;
-	static const int RANDOMSEED = 123456;
-	static const int NUMOFREADER = 4; //10;
-	static const int MAXCLONEPERCYCLE = 2;
-	static const int CLONEAGRESSIVE = 2; // Must be non-zero ; 1 is the most agressive ; Higher the number, lesser the agressiveness. 
-	*/
-
+	ostringstream strbufMessage;
+	
 	for (int iRFIDIndex = 1; iRFIDIndex < 6; iRFIDIndex++) {
-		std::cout << "Testing RFID (" << iRFIDIndex << "):\n";
+		strbufMessage << "Testing RFID (" << iRFIDIndex << "):\n";
+		a_logfile.write(strbufMessage.str());
+		strbufMessage.clear();
+		strbufMessage.str("");
 		srand(iRFIDIndex);
 		cloneRFID.reset();
 
 		a_pReader[0].read(a_pRFID[iRFIDIndex], PROCESS::intothechain, db);
-		//std::thread th1(&Reader::read, &a_pReader[0], std::ref(a_pRFID[iRFIDIndex]), PROCESS::intothechain, std::ref(db));
-		//th1.join();
-		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
-		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
+		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db); // Depending on CLONEAGRESSIVE, toCloneRfid may or may not create a clone tag.
+		
 		a_pReader[1].read(a_pRFID[iRFIDIndex], PROCESS::shipping, db);
 		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
 		
@@ -82,12 +93,12 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector a_Detec
 		iCloneCount += a_pReader[4].toCloneRfid(a_pRFID[iRFIDIndex], cloneRFID, db);
 		
 		a_pReader[5].read(a_pRFID[iRFIDIndex], PROCESS::outofthechain, db);
-		std::vector<Event> vResult;
+		vector<Event> vResult;
 		db.getRfidEvents(vResult, a_pRFID[iRFIDIndex].getRFID());
-		//db.print();
-
-		std::vector<RFID> vCloneRfid;
-		a_Detector.isValidRFIDTailEvents(vResult, vCloneRfid);
+		
+		// Verify the results.
+		vector<RFID> vCloneRfid;
+		a_Detector.isValidRFIDTailEvents(vResult, vCloneRfid, a_logfile);
 		switch (iRFIDIndex) {
 		case 1:
 			if (vCloneRfid.size() != 5)
@@ -168,12 +179,15 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector a_Detec
 			bResult = false;
 			break;
 		}
-
-		for (std::vector<RFID>::iterator it = vCloneRfid.begin(); it != vCloneRfid.end(); ++it) {
-			std::cout << "Detected clone RFID injection near : ";
-			((RFID)(*it)).print();
-			std::cout << "\n";
+				
+		for (vector<RFID>::iterator it = vCloneRfid.begin(); it != vCloneRfid.end(); ++it) {
+			strbufMessage << "Detected clone RFID injection near : ";
+			strbufMessage << ((RFID)(*it)).print();
+			strbufMessage << "\n";
 		}
+		a_logfile.write(strbufMessage.str());
+		strbufMessage.clear();
+		strbufMessage.str("");
 
 		if (bResult == false)
 			break;
@@ -181,7 +195,11 @@ bool Tester::ReaderRFIDTest(Reader a_pReader[], RFID a_pRFID[], Detector a_Detec
 	return bResult;
 }
 
-bool Tester::InitializationTest(Reader a_Reader[]) {
+/// <summary>
+/// InitializationTest.
+/// To prepare the pool of random string for readers (reader.initiateRandomChar), and to determine if the function works properly.
+/// </summary>
+bool Tester::InitializationReaderTest(Reader a_Reader[]) {
 	bool bResult = true;
 	int iRandomCharIndex = 0;
 
@@ -201,7 +219,7 @@ bool Tester::InitializationTest(Reader a_Reader[]) {
 		for (int iRandomIndex = 0; iRandomIndex < NUMBEROFRANDOMCHAR; iRandomIndex++) {
 			do {
 				ucTemp = rand() % 256 + 1;
-			} while (ucPreviousTemp == ucTemp);
+			} while (ucPreviousTemp == ucTemp || ucTemp == 0x0);
 			ucPreviousTemp = ucTemp;
 			if (a_Reader[iIndex].getRandomChar(iRandomIndex) != ucTemp) {
 				bResult = false;
@@ -212,7 +230,12 @@ bool Tester::InitializationTest(Reader a_Reader[]) {
 	return bResult;
 }
 
-bool Tester::InitializationTest(Detector a_Detector, RFID a_pRFID[]) {
+/// <summary>
+/// InitializationTest.
+/// To prepare the pool of random strings for all RFIDs' tails (detector.initiateRandomChar), 
+///	and to determine if this pool is properly assigned to the array of RFID (detector.initiateRFIDArray).
+/// </summary>
+bool Tester::InitializationTest(Detector& a_Detector, RFID a_pRFID[]) {
 	bool bResult = true;
 	int iRandomCharIndex = 0;
 
@@ -239,6 +262,11 @@ bool Tester::InitializationTest(Detector a_Detector, RFID a_pRFID[]) {
 	return bResult;
 }
 
+
+/// <summary>
+/// ComparisionTest.
+/// To compare tail values and tail pointer, and to determine if the comparision test (detector.isValidRFID) is working.
+/// </summary>
 bool Tester::ComparisionTest() {
 	RFID rfid1, rfid2;
 	Detector detector;
@@ -250,12 +278,10 @@ bool Tester::ComparisionTest() {
 
 	if ( rfid1.setTail('X') == false)
 		bResult = false;
-	//std::cout << "Test1: " << std::string((char*)rfid2.getTail(), TAILSIZE) << "(" << rfid2.getTailPointer() << ") ---> " << std::string((char*)rfid1.getTail(), TAILSIZE) << "(" << rfid1.getTailPointer() << ")\n";
 	bFlag = detector.isValidRFID(rfid2, rfid1);
 	if (bFlag == false)
 		bResult = false;
-	//std::cout << (bFlag == true ? "Valid" : "Invalid") << "\n";
-
+	
 	rfid2 = rfid1;
 	if ( rfid1.setTail('C') != false) // Same value cannot be set.
 		bResult = false;

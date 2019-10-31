@@ -5,15 +5,33 @@
 #include <thread>
 #include <chrono>
 #include <vector>
+#include <sstream> 
 #include "RFID.h"
 #include "Detector.h"
 #include "Reader.h"
 #include "Database.h"
 #include "Tester.h"
+#include "Logfile.h"
 
-void rfidmover(RFID& a_RFID, Reader a_aReader[NUMOFREADER], Database& db, Reader& a_ReaderMalicious);
+#ifdef WINDOWS
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#else
+#include <unistd.h>
+#define GetCurrentDir getcwd
+#endif
+#include<iostream>
 
-void rfidmover(RFID& a_RFID, Reader a_aReader[NUMOFREADER], Database& db, Reader& a_ReaderMalicious) {
+string GetCurrentWorkingDir(void) {
+	char buff[FILENAME_MAX];
+	char *result = GetCurrentDir(buff, FILENAME_MAX);
+	string current_working_dir(buff);
+	return current_working_dir;
+}
+
+void rfidmover(RFID& a_RFID, Reader a_aReader[NUMOFREADER], Database& db, Reader& a_ReaderMalicious, Logfile& a_logfile);
+
+void rfidmover(RFID& a_RFID, Reader a_aReader[NUMOFREADER], Database& db, Reader& a_ReaderMalicious, Logfile& a_logfile) {
 	int iCloneCount = 0;
 	int iClone = 0;
 	RFID cloneRFID;
@@ -32,25 +50,47 @@ void rfidmover(RFID& a_RFID, Reader a_aReader[NUMOFREADER], Database& db, Reader
 		iCloneCount += iClone;
 	} while (iClone == 1 && iCloneCount < MAXCLONEPERCYCLE);
 	a_aReader[a_RFID.getReaderSequence(NUMOFREADER - 1)-1].read(a_RFID, PROCESS::outofthechain, db);
-	if (iCloneCount > 0)
-		printf("RFID %d produced %d clone(s).\n", a_RFID.getRFID(), iCloneCount);
+	if (iCloneCount > 0) {
+		ostringstream strbufMessage;
+		strbufMessage << "RFID " << a_RFID.getRFID() << " produced " << iCloneCount << " clone(s).\n";
+		a_logfile.write(strbufMessage.str());
+		strbufMessage.clear();
+		strbufMessage.str("");
+	}
 }
 
 int main()
 {
-	//Tester tester;
-	//tester.runTest();
-	//return 1;
-	
+	Logfile logfile;
+	ostringstream strbufMessage;
+	string strLogFilePathName;
+	#ifdef WINDOWS
+		strLogFilePathName = GetCurrentWorkingDir() + "\\logfile.txt";
+	#else
+		strLogFilePathName = logfile.setFilePath(GetCurrentWorkingDir() + "//logfile.txt");
+	#endif
+
+	if ( logfile.setFilePath(strLogFilePathName) != 0){
+		printf("Error opening log file %s\n", strLogFilePathName.c_str());
+		return -1;
+	}
+
+	#ifdef TESTER
+	Tester tester;
+	tester.runTest(logfile);
+	logfile.close();
+	return 1;
+	#else
+
 	// Prepare detector and RFIDs. Detector generate the random values for RFIDs.
-	RFID rfids[NUMOFRFID];
+	RFID *rfids = new RFID[NUMOFRFID];
 	Detector detector;
 	detector.setSeed(RANDOMSEED);
 	detector.initiateRandomChar();
 	detector.initiateRFIDArray(NUMOFRFID, rfids);
 
 	// Prepare readers and malicious reader.
-	Reader readers[NUMOFREADER];
+	Reader* readers = new Reader[NUMOFREADER];
 	Reader readerMalicious;
 	for (int iIndex = 0; iIndex < NUMOFREADER; iIndex++) {
 		readers[iIndex].setReaderID(iIndex + 1);
@@ -63,36 +103,47 @@ int main()
 
 	// Start the simulation of RFID travelling across different readers.
 	Database db;
-	std::vector<std::thread> threads;
+	vector<thread> threads;
 	for (int iIndex = 0; iIndex < NUMOFRFID; iIndex++) 		
-		threads.push_back(std::thread(rfidmover, std::ref(rfids[iIndex]), std::ref(readers), std::ref(db), std::ref(readerMalicious)));
+		threads.push_back(thread(rfidmover, ref(rfids[iIndex]), ref(readers), ref(db), ref(readerMalicious), ref(logfile)));
 		
 	// Wait for all RFID to complete their travelling.
 	for (int iIndex = 0; iIndex < NUMOFRFID; iIndex++)
 		threads[iIndex].join();
 	
 	// Check the results.
-	std::vector<Event> vResult;
-	std::vector<RFID> vCloneRfid;
+	vector<Event> vResult;
+	vector<RFID> vCloneRfid;
 	size_t iTotalPossibleCloneEvents = 0;
 	bool bCloneRFIDTail[NUMOFRFID];
 	for (int iIndex = 0; iIndex < NUMOFRFID; iIndex++) {
 		db.getRfidEvents(vResult, rfids[iIndex].getRFID());
-		bCloneRFIDTail[iIndex] = detector.isValidRFIDTailEvents(vResult, vCloneRfid);
+		bCloneRFIDTail[iIndex] = detector.isValidRFIDTailEvents(vResult, vCloneRfid, logfile);
 		iTotalPossibleCloneEvents += vCloneRfid.size();
-		/*if (bCloneRFIDTail[iIndex] == false) { // To print the RFID results.
+		if (bCloneRFIDTail[iIndex] == false) { // To print the RFID results.
 			Event currentEvent;
-			for (std::vector<Event>::iterator it = vResult.begin(); it != vResult.end(); ++it) {
+			logfile.write("RFID, Tail Value, Tail Pointer, Timestamp, Operation\n");
+			for (vector<Event>::iterator it = vResult.begin(); it != vResult.end(); ++it) {
 				currentEvent = *it;
-				currentEvent.print();
-				printf("\n");
+				logfile.write(currentEvent.print()+"\n");
 			}
-		}*/
-		printf("RFID (%d) - Clone detected: %s (%zd) \n", rfids[iIndex].getRFID(), bCloneRFIDTail[iIndex] ? "False" : "True", vCloneRfid.size());
+		}
+		strbufMessage << "RFID (" << rfids[iIndex].getRFID() << ") - Clone detected: " << (bCloneRFIDTail[iIndex] ? "False" : "True") << "(" << vCloneRfid.size() << ")\n";
+		logfile.write(strbufMessage.str());
+		strbufMessage.clear();
+		strbufMessage.str("");
 		vResult.clear();
 		vCloneRfid.clear();
 	}
-	printf("Total possible clone events: %zd\n", iTotalPossibleCloneEvents);
-	printf("Total truth clone events: %i\n", detector.getTruthNumberofClone());
+	strbufMessage << "Total possible clone events : " << iTotalPossibleCloneEvents << "\n";
+	strbufMessage << "Total truth clone events : " << detector.getTruthNumberofClone() << "\n";
+	logfile.write(strbufMessage.str());
+	strbufMessage.clear();
+	strbufMessage.str("");
+	logfile.close();
+
+	printf("Output file is at %s\n", strLogFilePathName.c_str());
+	return 1;
+	#endif
 }
 
